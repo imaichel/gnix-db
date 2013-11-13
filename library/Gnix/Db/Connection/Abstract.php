@@ -71,10 +71,17 @@ abstract class Gnix_Db_Connection_Abstract
 
     private static function _getConnection($info)
     {
-        $connection = new PDO(sprintf('mysql:host=%s;port=%s;dbname=%s', $info['host'], $info['port'], $info['dbname']), $info['user'], $info['pass']);
+        $dsn = "";
+        if (array_key_exists('charset', $info)) {
+            $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=%s;', $info['host'], $info['port'], $info['dbname'], $info['charset']);
+        } else {
+            $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;', $info['host'], $info['port'], $info['dbname']);
+        }
+        $connection = new PDO($dsn, $info['user'], $info['pass']);
         foreach ($info['attributes'] as $key => $value) {
             $connection->setAttribute($key, $value);
         }
+        $connection->exec(sprintf("SET time_zone = '%s'", date_default_timezone_get()));
         return $connection;
     }
 
